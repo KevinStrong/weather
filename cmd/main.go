@@ -9,7 +9,14 @@ import (
 
 func main() {
 	apiKey := os.Getenv("WEATHER_API")
-	resp, err := http.Get("http://api.openweathermap.org/data/2.5/forecast?zip=75080&appid=" + apiKey)
+	request := weather.Request{
+		ZipCode: "75080",
+	}
+	requestUrl, err := weather.ConvertOurRequestStructToOpenApiRequest(request, apiKey)
+	if err != nil {
+		panic(err) // okay now can I panic here?
+	}
+	resp, err := http.Get(requestUrl)
 	if err != nil {
 		fmt.Print(err)
 		return

@@ -8,6 +8,21 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func TestThatWeCAnConvertOutInputsIntoWeatherRequest(t *testing.T) {
+	input := weather.Request{
+		ZipCode: "75080",
+	}
+	ourUrl, err := weather.ConvertOurRequestStructToOpenApiRequest(input, "fakeApiKey")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantUrl := "http://api.openweathermap.org/data/2.5/forecast?zip=75080&appid=fakeApiKey"
+	if ourUrl != wantUrl {
+		diff := cmp.Diff(wantUrl, ourUrl)
+		t.Fatal(diff)
+	}
+}
+
 func TestThatWeCanDecodeAWeatherResponse(t *testing.T){
 	response, err := os.Open("testData/weather.json")
 	if err != nil {
