@@ -23,6 +23,13 @@ func TestThatWeCAnConvertOutInputsIntoWeatherRequest(t *testing.T) {
 	}
 }
 
+func TestCreateOurWeatherObject(t *testing.T) {
+	weatherService := weather.New("fakeApiKey")
+	if weatherService.ApiKey != "fakeApiKey" {
+		t.Fatal("Failed to create weather service with provided ApiKey")
+	}
+}
+
 func TestThatWeCanDecodeAWeatherResponse(t *testing.T){
 	response, err := os.Open("testData/weather.json")
 	if err != nil {
