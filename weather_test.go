@@ -8,7 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestThatWeCAnConvertOutInputsIntoWeatherRequest(t *testing.T) {
+func TestConvertingWeatherRequestIntoOpenApiRequest(t *testing.T) {
 	input := weather.Request{
 		ZipCode: "75080",
 	}
@@ -23,7 +23,7 @@ func TestThatWeCAnConvertOutInputsIntoWeatherRequest(t *testing.T) {
 	}
 }
 
-func TestThatWeCanValidateInputsIntoWeatherRequest(t *testing.T) {
+func TestValidatingInputsForWeatherRequest(t *testing.T) {
 	emptyInput := weather.Request{
 		ZipCode: "",
 	}
@@ -40,14 +40,14 @@ func TestThatWeCanValidateInputsIntoWeatherRequest(t *testing.T) {
 	}
 }
 
-func TestCreateOurWeatherObject(t *testing.T) {
+func TestCreateWeatherService(t *testing.T) {
 	weatherService := weather.New("fakeApiKey")
 	if weatherService.ApiKey != "fakeApiKey" {
 		t.Fatal("Failed to create weather service with provided ApiKey")
 	}
 }
 
-func TestThatWeCanDecodeAWeatherResponse(t *testing.T){
+func TestThatWeCanDecodeAOpenApiResponse(t *testing.T){
 	response, err := os.Open("testData/weather.json")
 	if err != nil {
 		t.Fatal(err)
