@@ -23,6 +23,23 @@ func TestThatWeCAnConvertOutInputsIntoWeatherRequest(t *testing.T) {
 	}
 }
 
+func TestThatWeCanValidateInputsIntoWeatherRequest(t *testing.T) {
+	emptyInput := weather.Request{
+		ZipCode: "",
+	}
+	validInput := weather.Request{
+		ZipCode: "75080",
+	}
+	_, err := weather.ConvertOurRequestStructToOpenApiRequest(emptyInput, "fakeApiKey")
+	if err == nil {
+		t.Fatal("Should error when zipcode is empty string")
+	}
+	_, err = weather.ConvertOurRequestStructToOpenApiRequest(validInput, "")
+	if err == nil {
+		t.Fatal("Should error when apiKey is empty string")
+	}
+}
+
 func TestCreateOurWeatherObject(t *testing.T) {
 	weatherService := weather.New("fakeApiKey")
 	if weatherService.ApiKey != "fakeApiKey" {
