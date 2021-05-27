@@ -1,95 +1,44 @@
 {
-  "cod": "200",
-  "message": 0,
-  "cnt": 40,
-  "list": [
+  "coord": {
+    "lon": -122.402,
+    "lat": 37.6004
+  },
+  "weather": [
     {
-      "dt": 1620324000,
-      "main": {
-        "temp": 295.72,
-        "feels_like": 295.26,
-        "temp_min": 295.72,
-        "temp_max": 297.23,
-        "pressure": 1025,
-        "sea_level": 1025,
-        "grnd_level": 1002,
-        "humidity": 47,
-        "temp_kf": -1.51
-      },
-      "weather": [
-        {
-          "id": 800,
-          "main": "Clear",
-          "description": "clear sky",
-          "icon": "01d"
-        }
-      ],
-      "clouds": {
-        "all": 9
-      },
-      "wind": {
-        "speed": 3.72,
-        "deg": 5,
-        "gust": 4.9
-      },
-      "visibility": 10000,
-      "pop": 0,
-      "sys": {
-        "pod": "d"
-      },
-      "dt_txt": "2021-05-06 18:00:00"
-    },
-    {
-      "dt": 1620745200,
-      "main": {
-        "temp": 285.78,
-        "feels_like": 285.42,
-        "temp_min": 285.78,
-        "temp_max": 285.78,
-        "pressure": 1021,
-        "sea_level": 1021,
-        "grnd_level": 998,
-        "humidity": 89,
-        "temp_kf": 0
-      },
-      "weather": [
-        {
-          "id": 500,
-          "main": "Rain",
-          "description": "light rain",
-          "icon": "10d"
-        }
-      ],
-      "clouds": {
-        "all": 100
-      },
-      "wind": {
-        "speed": 4.96,
-        "deg": 39,
-        "gust": 7.31
-      },
-      "visibility": 10000,
-      "pop": 0.97,
-      "rain": {
-        "3h": 1.55
-      },
-      "sys": {
-        "pod": "d"
-      },
-      "dt_txt": "2021-05-11 15:00:00"
+      "id": 801,
+      "main": "Clouds",
+      "description": "few clouds",
+      "icon": "02d"
     }
   ],
-  "city": {
-    "id": 0,
-    "name": "Richardson",
-    "coord": {
-      "lat": 32.966,
-      "lon": -96.7452
-    },
+  "base": "stations",
+  "main": {
+    "temp": 56.21,
+    "feels_like": 55.06,
+    "temp_min": 51.64,
+    "temp_max": 62.56,
+    "pressure": 1020,
+    "humidity": 75
+  },
+  "visibility": 10000,
+  "wind": {
+    "speed": 16.11,
+    "deg": 280,
+    "gust": 25.32
+  },
+  "clouds": {
+    "all": 20
+  },
+  "dt": 1622130045,
+  "sys": {
+    "type": 1,
+    "id": 5817,
     "country": "US",
-    "population": 0,
-    "timezone": -18000,
-    "sunrise": 1620300872,
-    "sunset": 1620349954
-  }
+    "sunrise": 1622119922,
+    "sunset": 1622172116
+  },
+  "timezone": -25200,
+  "id": 0,
+  "name": "Millbrae",
+  "cod": 200
 }
