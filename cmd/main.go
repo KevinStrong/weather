@@ -3,14 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+
 	"weather"
 )
 
 func main() {
 	apiKey := os.Getenv("WEATHER_API")
-	request := weather.Request{
-		ZipCode: "75080",
-	}
+	request := "Millbrae, CA, USA"
+
 	service := weather.New(apiKey)
 	currentWeather, err := service.GetWeather(request)
 	if err != nil {

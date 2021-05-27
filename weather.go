@@ -1,11 +1,11 @@
 package weather
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	weatherapi "weather/gen"
 )
@@ -15,58 +15,45 @@ type CurrentWeather struct {
 	Temp float64
 }
 
-type Request struct {
-	ZipCode string
-}
-
 type Service struct {
-	ApiKey string
-	client *weatherapi.Client
+	ApiKey  string
+	baseUrl string
 }
 
-func (s *Service) GetWeather(request Request) (*CurrentWeather, error) {
-	zip := weatherapi.Zip(request.ZipCode)
-	unit := weatherapi.CurrentWeatherDataParamsUnits("imperial")
-	req := &weatherapi.CurrentWeatherDataParams{Zip: &zip, Units: &unit}
-	response, err := s.client.CurrentWeatherData(context.Background(), req)
-	if err != nil {
-		return nil, err
-	}
-	weather := &weatherapi.N200{}
-	err = json.NewDecoder(response.Body).Decode(weather)
+func (s *Service) GetWeather(location string) (*CurrentWeather, error) {
+	targetUrl := s.MakeURL(location)
+
+	print(targetUrl)
+	response, err := http.Get(targetUrl) //nolint:gosec
 	if err != nil {
 		return nil, err
 	}
 	defer response.Body.Close()
-	toStruct := CurrentWeather{
-		Temp: *weather.Main.Temp,
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("got %d", response.StatusCode)
 	}
-	return &toStruct, nil
+
+	weather, err := ConvertWeatherOpenApiResponseToStruct(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	return &weather, nil
+}
+
+func (s *Service) MakeURL(city string) string {
+	return fmt.Sprintf("%sweather?q=%s&appid=%s&units=imperial", s.baseUrl, url.QueryEscape(city), s.ApiKey)
 }
 
 func New(apiKey string) Service {
-	// We can ignore the error here because the request func
-	// we provide doesn't have a case of returning an error.
-	newClient, _ := weatherapi.NewClient("",
-		weatherapi.WithBaseURL("https://api.openweathermap.org/data/2.5/"),
-		weatherapi.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
-			query := req.URL.Query()
-			query.Add("apiKey", apiKey)
-			req.URL.RawQuery = query.Encode()
-			return nil
-		}),
-	)
-	return Service{
-		ApiKey: apiKey,
-		client: newClient,
-	}
+	baseUrl := "https://api.openweathermap.org/data/2.5/"
+	return NewWithBase(apiKey, baseUrl)
 }
 
-func ConvertOurRequestStructToOpenApiRequest(request Request, apiKey string) (string, error) {
-	if request.ZipCode == "" || apiKey == "" {
-		return "", errors.New("please specify zipcode and ApiKey")
+func NewWithBase(apiKey, baseUrl string) Service {
+	return Service{
+		ApiKey:  apiKey,
+		baseUrl: baseUrl,
 	}
-	return "http://api.openweathermap.org/data/2.5/forecast?zip=" + request.ZipCode + "&appid=" + apiKey, nil
 }
 
 func ConvertWeatherOpenApiResponseToStruct(r io.Reader) (CurrentWeather, error) {

@@ -9,35 +9,23 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func TestConvertingWeatherRequestIntoOpenApiRequest(t *testing.T) {
-	input := weather.Request{
-		ZipCode: "75080",
-	}
-	ourUrl, err := weather.ConvertOurRequestStructToOpenApiRequest(input, "fakeApiKey")
-	if err != nil {
-		t.Fatal(err)
-	}
-	wantUrl := "http://api.openweathermap.org/data/2.5/forecast?zip=75080&appid=fakeApiKey"
-	if ourUrl != wantUrl {
-		diff := cmp.Diff(wantUrl, ourUrl)
-		t.Fatal(diff)
+func TestRequestGeneration(t *testing.T) {
+	expected := `https://api.openweathermap.org/data/2.5/weather?q=London%2C+UK&appid=bar&units=imperial`
+	input := "London, UK"
+	service := weather.New("bar")
+	url := service.MakeURL(input)
+	if !cmp.Equal(url, expected) {
+		t.Fatalf("got \n%s\n but expected \n%s", url, expected)
 	}
 }
 
-func TestValidatingInputsForWeatherRequest(t *testing.T) {
-	emptyInput := weather.Request{
-		ZipCode: "",
-	}
-	validInput := weather.Request{
-		ZipCode: "75080",
-	}
-	_, err := weather.ConvertOurRequestStructToOpenApiRequest(emptyInput, "fakeApiKey")
-	if err == nil {
-		t.Fatal("Should error when zipcode is empty string")
-	}
-	_, err = weather.ConvertOurRequestStructToOpenApiRequest(validInput, "")
-	if err == nil {
-		t.Fatal("Should error when apiKey is empty string")
+func TestMillbrae(t *testing.T) {
+	expected := `https://api.openweathermap.org/data/2.5/weather?q=Millbrae%2C+CA%2C+USA&appid=bar&units=imperial`
+	input := "Millbrae, CA, USA"
+	service := weather.New("bar")
+	url := service.MakeURL(input)
+	if !cmp.Equal(url, expected) {
+		t.Fatalf("got \n%s\n but expected \n%s", url, expected)
 	}
 }
 
