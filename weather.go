@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
 	weatherapi "weather/gen"
 )
@@ -18,37 +19,42 @@ type CurrentWeather struct {
 type Service struct {
 	ApiKey  string
 	baseUrl string
+	client *http.Client
 }
 
-func (s *Service) GetWeather(location string) (*CurrentWeather, error) {
+func (s *Service) GetWeather(location string) (CurrentWeather, error) {
 	targetUrl := s.MakeURL(location)
 
-	response, err := http.Get(targetUrl) //nolint:gosec
+	response, err := s.client.Get(targetUrl) //nolint:gosec
+
 	if err != nil {
-		return nil, err
+		return CurrentWeather{}, err
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("got %d", response.StatusCode)
+		return CurrentWeather{}, fmt.Errorf("got %d", response.StatusCode)
 	}
 
 	weather, err := ConvertWeatherOpenApiResponseToStruct(response.Body)
 	if err != nil {
-		return nil, err
+		return CurrentWeather{}, err
 	}
-	return &weather, nil
+	return weather, nil
 }
 
 func (s *Service) MakeURL(city string) string {
-	return fmt.Sprintf("%sweather?q=%s&appid=%s&units=imperial", s.baseUrl, url.QueryEscape(city), s.ApiKey)
+	return fmt.Sprintf("%s/weather?q=%s&appid=%s&units=imperial", s.baseUrl, url.QueryEscape(city), s.ApiKey)
 }
 
 type Option func(*Service)
 
 func New(apiKey string, opts ...Option) *Service {
 	service := &Service{
-		baseUrl: "https://api.openweathermap.org/data/2.5/",
+		baseUrl: "https://api.openweathermap.org/data/2.5",
 		ApiKey: apiKey,
+		client: &http.Client{
+			Timeout: 5 * time.Second,
+		},
 	}
 	for _, o := range opts {
 		o(service)
@@ -59,6 +65,12 @@ func New(apiKey string, opts ...Option) *Service {
 func WithBaseURL(baseUrl string) Option {
 	return func(s *Service) {
 		s.baseUrl = baseUrl
+	}
+}
+
+func WithHttpClient(client *http.Client) Option {
+	return func(s *Service) {
+		s.client = client
 	}
 }
 
