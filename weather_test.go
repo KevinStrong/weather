@@ -10,9 +10,11 @@ import (
 )
 
 func TestRequestGeneration(t *testing.T) {
-	expected := `https://api.openweathermap.org/data/2.5/weather?q=London%2C+UK&appid=bar&units=imperial`
+	expected := `https://api.openweathermap.org/data/2.5/weather?q=London%2C+UK&appid=fakeAPIKey&units=imperial`
 	input := "London, UK"
-	service := weather.New("bar")
+	service := weather.New( "fakeAPIKey",
+		weather.WithBaseURL("https://api.openweathermap.org/data/2.5/"),
+	)
 	url := service.MakeURL(input)
 	if !cmp.Equal(url, expected) {
 		t.Fatalf("got \n%s\n but expected \n%s", url, expected)
@@ -20,9 +22,11 @@ func TestRequestGeneration(t *testing.T) {
 }
 
 func TestMillbrae(t *testing.T) {
-	expected := `https://api.openweathermap.org/data/2.5/weather?q=Millbrae%2C+CA%2C+USA&appid=bar&units=imperial`
+	expected := `https://api.openweathermap.org/data/2.5/weather?q=Millbrae%2C+CA%2C+USA&appid=fakeAPIKey&units=imperial`
 	input := "Millbrae, CA, USA"
-	service := weather.New("bar")
+	service := weather.New( "fakeAPIKey",
+		weather.WithBaseURL("https://api.openweathermap.org/data/2.5/"),
+	)
 	url := service.MakeURL(input)
 	if !cmp.Equal(url, expected) {
 		t.Fatalf("got \n%s\n but expected \n%s", url, expected)
@@ -30,7 +34,7 @@ func TestMillbrae(t *testing.T) {
 }
 
 func TestCreateWeatherService(t *testing.T) {
-	weatherService := weather.New("fakeApiKey")
+	weatherService := weather.New( "fakeApiKey")
 	if weatherService.ApiKey != "fakeApiKey" {
 		t.Fatal("Failed to create weather service with provided ApiKey")
 	}

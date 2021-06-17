@@ -23,7 +23,6 @@ type Service struct {
 func (s *Service) GetWeather(location string) (*CurrentWeather, error) {
 	targetUrl := s.MakeURL(location)
 
-	print(targetUrl)
 	response, err := http.Get(targetUrl) //nolint:gosec
 	if err != nil {
 		return nil, err
@@ -44,15 +43,22 @@ func (s *Service) MakeURL(city string) string {
 	return fmt.Sprintf("%sweather?q=%s&appid=%s&units=imperial", s.baseUrl, url.QueryEscape(city), s.ApiKey)
 }
 
-func New(apiKey string) Service {
-	baseUrl := "https://api.openweathermap.org/data/2.5/"
-	return NewWithBase(apiKey, baseUrl)
+type Option func(*Service)
+
+func New(apiKey string, opts ...Option) *Service {
+	service := &Service{
+		baseUrl: "https://api.openweathermap.org/data/2.5/",
+		ApiKey: apiKey,
+	}
+	for _, o := range opts {
+		o(service)
+	}
+	return service
 }
 
-func NewWithBase(apiKey, baseUrl string) Service {
-	return Service{
-		ApiKey:  apiKey,
-		baseUrl: baseUrl,
+func WithBaseURL(baseUrl string) Option {
+	return func(s *Service) {
+		s.baseUrl = baseUrl
 	}
 }
 
