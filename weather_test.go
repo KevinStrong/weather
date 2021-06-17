@@ -37,7 +37,7 @@ func TestEndToEnd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	expect := weather.CurrentWeather{Temp: 56.21}
+	expect := weather.CurrentWeather{Temp: 56.21, Summary: "Clouds"}
 	if !cmp.Equal(expect, response) {
 		t.Fatal(cmp.Diff(expect, response))
 	}
@@ -87,7 +87,7 @@ func TestThatWeCanDecodeAOpenApiResponse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := weather.CurrentWeather{Temp: 56.21}
+	want := weather.CurrentWeather{Temp: 56.21, Summary: "Clouds"}
 	if !cmp.Equal(want, ourStruct) {
 		diff := cmp.Diff(want, ourStruct)
 		t.Fatal(diff)

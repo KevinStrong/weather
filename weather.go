@@ -14,6 +14,7 @@ import (
 // CurrentWeather is part of weather api response
 type CurrentWeather struct {
 	Temp float64
+	Summary string
 }
 
 type Service struct {
@@ -82,5 +83,9 @@ func ConvertWeatherOpenApiResponseToStruct(r io.Reader) (CurrentWeather, error) 
 	}
 	response := CurrentWeather{}
 	response.Temp = *weatherResponse.Main.Temp
+	if len(*weatherResponse.Weather) == 0 {
+		return CurrentWeather{}, fmt.Errorf("invalid weather response: %v", weatherResponse)
+	}
+	response.Summary = *(*weatherResponse.Weather)[0].Main
 	return response, nil
 }
