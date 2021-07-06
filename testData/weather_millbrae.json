@@ -1,0 +1,44 @@
+{
+  "coord": {
+    "lon": -122.402,
+    "lat": 37.6004
+  },
+  "weather": [
+    {
+      "id": 801,
+      "main": "Sunny",
+      "description": "few clouds",
+      "icon": "02d"
+    }
+  ],
+  "base": "stations",
+  "main": {
+    "temp": 70.80,
+    "feels_like": 70.06,
+    "temp_min": 65.64,
+    "temp_max": 75.56,
+    "pressure": 1020,
+    "humidity": 75
+  },
+  "visibility": 10000,
+  "wind": {
+    "speed": 16.11,
+    "deg": 280,
+    "gust": 25.32
+  },
+  "clouds": {
+    "all": 20
+  },
+  "dt": 1622130045,
+  "sys": {
+    "type": 1,
+    "id": 5817,
+    "country": "US",
+    "sunrise": 1622119922,
+    "sunset": 1622172116
+  },
+  "timezone": -25200,
+  "id": 0,
+  "name": "Millbrae",
+  "cod": 200
+}
