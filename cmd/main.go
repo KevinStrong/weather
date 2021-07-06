@@ -14,6 +14,7 @@ func main() {
 	request := ""
 
 	for request != "exit" {
+		fmt.Print("Enter in a location to get it's weather, or \"exit\" to exit")
 		request = getLocation()
 		service := weather.New(apiKey)
 		currentWeather, err := service.GetWeather(request)
@@ -21,7 +22,7 @@ func main() {
 			panic(err)
 		}
 
-		fmt.Printf("%v\n", currentWeather)
+		fmt.Printf("Current weather in %v is %v\n", request, currentWeather)
 	}
 }
 
