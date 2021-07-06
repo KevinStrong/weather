@@ -15,6 +15,7 @@ import (
 func TestEndToEnd(t *testing.T) {
 	t.Parallel()
 	server := httptest.NewTLSServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		//goland:noinspection SpellCheckingInspection
 		expected := "/weather?q=Millbrae%2C+CA%2C+USA&appid=fakeAPIKey&units=imperial"
 		if request.RequestURI != expected {
 			t.Fatalf("got \n%s\n but expected \n%s", request.RequestURI, expected)
@@ -31,7 +32,7 @@ func TestEndToEnd(t *testing.T) {
 	service := weather.New(
 		"fakeAPIKey",
 		weather.WithBaseURL(server.URL),
-		weather.WithHttpClient(server.Client()),
+		weather.WithHTTPClient(server.Client()),
 	)
 	response, err := service.GetWeather("Millbrae, CA, USA")
 	if err != nil {
@@ -72,7 +73,7 @@ func TestMillbrae(t *testing.T) {
 func TestCreateWeatherService(t *testing.T) {
 	t.Parallel()
 	weatherService := weather.New("fakeApiKey")
-	if weatherService.ApiKey != "fakeApiKey" {
+	if weatherService.APIKey != "fakeApiKey" {
 		t.Fatal("Failed to create weather service with provided ApiKey")
 	}
 }
@@ -83,7 +84,7 @@ func TestThatWeCanDecodeAOpenApiResponse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ourStruct, err := weather.ConvertWeatherOpenApiResponseToStruct(response)
+	ourStruct, err := weather.ConvertWeatherOpenAPIResponseToStruct(response)
 	if err != nil {
 		t.Fatal(err)
 	}

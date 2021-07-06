@@ -8,35 +8,38 @@ import (
 	"net/url"
 	"time"
 
-	weatherapi "weather/gen"
+	weatherAPI "weather/gen"
 )
 
 // CurrentWeather is part of weather api response
 type CurrentWeather struct {
-	Temp float64
+	Temp    float64
 	Summary string
 }
 
 type Service struct {
-	ApiKey  string
-	baseUrl string
-	client *http.Client
+	APIKey  string
+	baseURL string
+	client  *http.Client
 }
 
 func (s *Service) GetWeather(location string) (CurrentWeather, error) {
-	targetUrl := s.MakeURL(location)
+	targetURL := s.MakeURL(location)
 
-	response, err := s.client.Get(targetUrl) //nolint:gosec
+	// todo IDE error "get must not be called?"
+	response, err := s.client.Get(targetURL)
 
 	if err != nil {
 		return CurrentWeather{}, err
 	}
+	// todo handle potential error?
+	//goland:noinspection GoUnhandledErrorResult
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
 		return CurrentWeather{}, fmt.Errorf("got %d", response.StatusCode)
 	}
 
-	weather, err := ConvertWeatherOpenApiResponseToStruct(response.Body)
+	weather, err := ConvertWeatherOpenAPIResponseToStruct(response.Body)
 	if err != nil {
 		return CurrentWeather{}, err
 	}
@@ -44,15 +47,15 @@ func (s *Service) GetWeather(location string) (CurrentWeather, error) {
 }
 
 func (s *Service) MakeURL(city string) string {
-	return fmt.Sprintf("%s/weather?q=%s&appid=%s&units=imperial", s.baseUrl, url.QueryEscape(city), s.ApiKey)
+	return fmt.Sprintf("%s/weather?q=%s&appid=%s&units=imperial", s.baseURL, url.QueryEscape(city), s.APIKey)
 }
 
 type Option func(*Service)
 
 func New(apiKey string, opts ...Option) *Service {
 	service := &Service{
-		baseUrl: "https://api.openweathermap.org/data/2.5",
-		ApiKey: apiKey,
+		baseURL: "https://api.openweathermap.org/data/2.5",
+		APIKey:  apiKey,
 		client: &http.Client{
 			Timeout: 5 * time.Second,
 		},
@@ -63,20 +66,20 @@ func New(apiKey string, opts ...Option) *Service {
 	return service
 }
 
-func WithBaseURL(baseUrl string) Option {
+func WithBaseURL(baseURL string) Option {
 	return func(s *Service) {
-		s.baseUrl = baseUrl
+		s.baseURL = baseURL
 	}
 }
 
-func WithHttpClient(client *http.Client) Option {
+func WithHTTPClient(client *http.Client) Option {
 	return func(s *Service) {
 		s.client = client
 	}
 }
 
-func ConvertWeatherOpenApiResponseToStruct(r io.Reader) (CurrentWeather, error) {
-	weatherResponse := &weatherapi.N200{}
+func ConvertWeatherOpenAPIResponseToStruct(r io.Reader) (CurrentWeather, error) {
+	weatherResponse := &weatherAPI.N200{}
 	err := json.NewDecoder(r).Decode(weatherResponse)
 	if err != nil {
 		return CurrentWeather{}, err
