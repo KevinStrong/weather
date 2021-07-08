@@ -26,13 +26,11 @@ type Service struct {
 func (s *Service) GetWeather(location string) (CurrentWeather, error) {
 	targetURL := s.MakeURL(location)
 
-	// todo IDE error "get must not be called?"
 	response, err := s.client.Get(targetURL)
 
 	if err != nil {
 		return CurrentWeather{}, err
 	}
-	// todo handle potential error?
 	//goland:noinspection GoUnhandledErrorResult
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
