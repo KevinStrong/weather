@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 
 	"weather"
@@ -17,6 +16,7 @@ func TestEndToEnd(t *testing.T) {
 	type testCase struct {
 		name            string
 		location        string
+		weatherFile     string
 		expectedURL     string
 		expectedWeather weather.CurrentWeather
 	}
@@ -25,6 +25,7 @@ func TestEndToEnd(t *testing.T) {
 		{
 			name:        "London",
 			location:    "London, UK",
+			weatherFile: "testData/weather.json",
 			expectedURL: "/weather?q=London%2C+UK&appid=fakeAPIKey&units=imperial",
 			expectedWeather: weather.CurrentWeather{
 				Temp:    56.21,
@@ -34,6 +35,7 @@ func TestEndToEnd(t *testing.T) {
 		{
 			name:        "Millbrae",
 			location:    "Millbrae, CA, USA",
+			weatherFile: "testData/weather_millbrae.json",
 			expectedURL: "/weather?q=Millbrae%2C+CA%2C+USA&appid=fakeAPIKey&units=imperial",
 			expectedWeather: weather.CurrentWeather{
 				Temp:    70.8,
@@ -41,20 +43,16 @@ func TestEndToEnd(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range testCases {
-		test := test
-		t.Run(test.name, func(t *testing.T) {
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			server := httptest.NewTLSServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-				if request.RequestURI != test.expectedURL {
-					t.Fatalf("got \n%s\n but expected \n%s", request.RequestURI, test.expectedURL)
-				}
-				var weatherFile = "testData/weather.json"
-				if strings.Contains(request.RequestURI, "Millbrae") {
-					weatherFile = "testData/weather_millbrae.json"
+				if request.RequestURI != tc.expectedURL {
+					t.Fatalf("got \n%s\n but expected \n%s", request.RequestURI, tc.expectedURL)
 				}
 
-				response, err := os.Open(weatherFile)
+				response, err := os.Open(tc.weatherFile)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -66,14 +64,14 @@ func TestEndToEnd(t *testing.T) {
 			service := weather.New(
 				"fakeAPIKey",
 				weather.WithBaseURL(server.URL),
-				weather.WithHTTPClient(server.Client()),
+				weather.WithHTTPClient(server.Client()), // httptest self signs it's certs.  This client will trust httptest servers.
 			)
-			response, err := service.GetWeather(test.location)
+			response, err := service.GetWeather(tc.location)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if !cmp.Equal(test.expectedWeather, response) {
-				t.Fatal(cmp.Diff(test.expectedWeather, response))
+			if !cmp.Equal(tc.expectedWeather, response) {
+				t.Fatal(cmp.Diff(tc.expectedWeather, response))
 			}
 		})
 	}
