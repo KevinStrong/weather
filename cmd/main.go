@@ -1,34 +1,22 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
-
 	"weather"
 )
 
 func main() {
+	// todo verify api key and prompt user if not here
+	// move logic into weather package
 	apiKey := os.Getenv("WEATHER_API")
+	service := weather.New(apiKey)
+	location := service.GetLocation(os.Args[1:])
+	currentWeather, err := service.GetWeather(location)
 
-	request := ""
-
-	for request != "exit" {
-		fmt.Print("Enter in a location to get it's weather, or \"exit\" to exit")
-		request = getLocation()
-		service := weather.New(apiKey)
-		currentWeather, err := service.GetWeather(request)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Current weather in %v is %v\n", request, currentWeather)
+	if err != nil {
+		panic(err)
 	}
-}
 
-func getLocation() string {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter text: ")
-	text, _ := reader.ReadString('\n')
-	return text
+	fmt.Printf("Current weather in %v is %v\n", location, currentWeather)
 }

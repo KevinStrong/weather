@@ -1,10 +1,12 @@
 package weather_test
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"weather"
@@ -129,5 +131,32 @@ func TestThatWeCanDecodeAOpenApiResponse(t *testing.T) {
 	if !cmp.Equal(want, ourStruct) {
 		diff := cmp.Diff(want, ourStruct)
 		t.Fatal(diff)
+	}
+}
+
+func TestGetLocationFromProgramArgs(t *testing.T) {
+	service := weather.New("FakeAPIKey")
+	want := "Dallas, TX, USA"
+	got := service.GetLocation([]string{"Dallas,", "TX,", "USA"})
+	if want != got {
+		t.Fatalf("Want: %q, got: %q", want, got)
+	}
+}
+
+func TestGetLocationFromStdIn(t *testing.T) {
+	want := "Dallas, TX, USA"
+	writer := &bytes.Buffer{}
+	service := weather.New("FakeAPIKey",
+		weather.WithReader(strings.NewReader(want)),
+		weather.WithWriter(writer),
+	)
+	got := service.GetLocation([]string{})
+	if want != got {
+		t.Fatalf("Want: %q, got: %q", want, got)
+	}
+	want = "Enter in a location to get it's weather\n"
+	got = writer.String()
+	if want != got {
+		t.Fatalf("Want: %q, got: %q", want, got)
 	}
 }

@@ -1,11 +1,14 @@
 package weather
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"os"
+	"strings"
 	"time"
 
 	weatherAPI "weather/gen"
@@ -18,9 +21,11 @@ type CurrentWeather struct {
 }
 
 type Service struct {
-	APIKey  string
-	baseURL string
-	client  *http.Client
+	APIKey   string
+	baseURL  string
+	client   *http.Client
+	readIn   io.Reader
+	writeOut io.Writer
 }
 
 func (s *Service) GetWeather(location string) (CurrentWeather, error) {
@@ -57,6 +62,8 @@ func New(apiKey string, opts ...Option) *Service {
 		client: &http.Client{
 			Timeout: 5 * time.Second,
 		},
+		readIn:   os.Stdin,
+		writeOut: os.Stdout,
 	}
 	for _, o := range opts {
 		o(service)
@@ -76,6 +83,18 @@ func WithHTTPClient(client *http.Client) Option {
 	}
 }
 
+func WithReader(reader io.Reader) Option {
+	return func(s *Service) {
+		s.readIn = reader
+	}
+}
+
+func WithWriter(writer io.Writer) Option {
+	return func(s *Service) {
+		s.writeOut = writer
+	}
+}
+
 func ConvertWeatherOpenAPIResponseToStruct(r io.Reader) (CurrentWeather, error) {
 	weatherResponse := &weatherAPI.N200{}
 	err := json.NewDecoder(r).Decode(weatherResponse)
@@ -89,4 +108,21 @@ func ConvertWeatherOpenAPIResponseToStruct(r io.Reader) (CurrentWeather, error) 
 	}
 	response.Summary = *(*weatherResponse.Weather)[0].Main
 	return response, nil
+}
+
+func (s *Service) getLocationFromTerminal() string {
+	fmt.Fprint(s.writeOut, "Enter in a location to get it's weather\n")
+	reader := bufio.NewReader(s.readIn)
+	text, _ := reader.ReadString('\n')
+	return text
+}
+
+func (s *Service) GetLocation(args []string) string {
+	var location string
+	if len(args) > 0 {
+		location = strings.Join(args, " ")
+	} else {
+		location = s.getLocationFromTerminal()
+	}
+	return location
 }
