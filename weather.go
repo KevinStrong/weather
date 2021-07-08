@@ -111,7 +111,7 @@ func ConvertWeatherOpenAPIResponseToStruct(r io.Reader) (CurrentWeather, error) 
 }
 
 func (s *Service) getLocationFromTerminal() string {
-	fmt.Fprint(s.writeOut, "Enter in a location to get it's weather\n")
+	_, _ = fmt.Fprint(s.writeOut, "Enter in a location to get it's weather\n")
 	reader := bufio.NewReader(s.readIn)
 	text, _ := reader.ReadString('\n')
 	return text
@@ -120,7 +120,7 @@ func (s *Service) getLocationFromTerminal() string {
 func (s *Service) GetLocation(args []string) string {
 	var location string
 	if len(args) > 0 {
-		location = strings.Join(args, " ")
+		location = strings.Join(args, " ") + "\n"
 	} else {
 		location = s.getLocationFromTerminal()
 	}

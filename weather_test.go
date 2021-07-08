@@ -136,7 +136,7 @@ func TestThatWeCanDecodeAOpenApiResponse(t *testing.T) {
 
 func TestGetLocationFromProgramArgs(t *testing.T) {
 	service := weather.New("FakeAPIKey")
-	want := "Dallas, TX, USA"
+	want := "Dallas, TX, USA\n"
 	got := service.GetLocation([]string{"Dallas,", "TX,", "USA"})
 	if want != got {
 		t.Fatalf("Want: %q, got: %q", want, got)
@@ -144,7 +144,7 @@ func TestGetLocationFromProgramArgs(t *testing.T) {
 }
 
 func TestGetLocationFromStdIn(t *testing.T) {
-	want := "Dallas, TX, USA"
+	want := "Dallas, TX, USA\n"
 	writer := &bytes.Buffer{}
 	service := weather.New("FakeAPIKey",
 		weather.WithReader(strings.NewReader(want)),
