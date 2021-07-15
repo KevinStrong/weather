@@ -14,6 +14,32 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func TestReturnGoodErrorFor404(t *testing.T) {
+	server := httptest.NewTLSServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		http.Error(writer, "wrong city, probably", http.StatusNotFound)
+	}))
+	service, _ := weather.New(
+		weather.WithAPIKey("fakeAPIKey"),
+		weather.WithBaseURL(server.URL),
+		weather.WithHTTPClient(server.Client()), // httptest self signs it's certs.  This client will trust httptest servers.
+	)
+	_, err := service.GetWeather("fake city, AR")
+	if err == nil {
+		t.Fatal("weather service should fail if it receives a 404 from weather server")
+	}
+	s := "no weather data found for fake city, AR"
+	if err.Error() != s {
+		t.Fatalf("Bad error message, want: %s, got %s", s, err.Error())
+	}
+}
+
+func TestNewWithEmptyAPIKeyReturnsError(t *testing.T) {
+	_, err := weather.New(weather.WithAPIKey(""))
+	if err == nil {
+		t.Error("Empty api key should error")
+	}
+}
+
 func TestEndToEnd(t *testing.T) {
 	type testCase struct {
 		name            string
@@ -63,8 +89,8 @@ func TestEndToEnd(t *testing.T) {
 					t.Fatal(err)
 				}
 			}))
-			service := weather.New(
-				"fakeAPIKey",
+			service, _ := weather.New(
+				weather.WithAPIKey("fakeAPIKey"),
 				weather.WithBaseURL(server.URL),
 				weather.WithHTTPClient(server.Client()), // httptest self signs it's certs.  This client will trust httptest servers.
 			)
@@ -99,7 +125,8 @@ func TestRequestGeneration(t *testing.T) {
 	}
 	for _, test := range tests {
 		test := test
-		service := weather.New("fakeAPIKey",
+		service, _ := weather.New(
+			weather.WithAPIKey("fakeAPIKey"),
 			weather.WithBaseURL("https://api.openweathermap.org/data/2.5"),
 		)
 		url := service.MakeURL(test.input)
@@ -111,7 +138,7 @@ func TestRequestGeneration(t *testing.T) {
 
 func TestCreateWeatherService(t *testing.T) {
 	t.Parallel()
-	weatherService := weather.New("fakeApiKey")
+	weatherService, _ := weather.New(weather.WithAPIKey("fakeApiKey"))
 	if weatherService.APIKey != "fakeApiKey" {
 		t.Fatal("Failed to create weather service with provided APIKey")
 	}
@@ -135,7 +162,7 @@ func TestThatWeCanDecodeAOpenApiResponse(t *testing.T) {
 }
 
 func TestGetLocationFromProgramArgs(t *testing.T) {
-	service := weather.New("FakeAPIKey")
+	service, _ := weather.New(weather.WithAPIKey("fakeAPIKey"))
 	want := "Dallas, TX, USA\n"
 	got := service.GetLocation([]string{"Dallas,", "TX,", "USA"})
 	if want != got {
@@ -146,7 +173,8 @@ func TestGetLocationFromProgramArgs(t *testing.T) {
 func TestGetLocationFromStdIn(t *testing.T) {
 	want := "Dallas, TX, USA\n"
 	writer := &bytes.Buffer{}
-	service := weather.New("FakeAPIKey",
+	service, _ := weather.New(
+		weather.WithAPIKey("fakeAPIKey"),
 		weather.WithReader(strings.NewReader(want)),
 		weather.WithWriter(writer),
 	)

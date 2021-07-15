@@ -3,6 +3,7 @@ package weather
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -38,6 +39,9 @@ func (s *Service) GetWeather(location string) (CurrentWeather, error) {
 	}
 	//goland:noinspection GoUnhandledErrorResult
 	defer response.Body.Close()
+	if response.StatusCode == http.StatusNotFound {
+		return CurrentWeather{}, fmt.Errorf("no weather data found for %s", location)
+	}
 	if response.StatusCode != http.StatusOK {
 		return CurrentWeather{}, fmt.Errorf("got %d", response.StatusCode)
 	}
@@ -55,10 +59,10 @@ func (s *Service) MakeURL(city string) string {
 
 type Option func(*Service)
 
-func New(apiKey string, opts ...Option) *Service {
+func New(opts ...Option) (*Service, error) {
 	service := &Service{
 		baseURL: "https://api.openweathermap.org/data/2.5",
-		APIKey:  apiKey,
+		APIKey:  "",
 		client: &http.Client{
 			Timeout: 5 * time.Second,
 		},
@@ -68,7 +72,22 @@ func New(apiKey string, opts ...Option) *Service {
 	for _, o := range opts {
 		o(service)
 	}
-	return service
+	if service.APIKey == "" {
+		return nil, errors.New("API key must not be empty")
+	}
+	return service, nil
+}
+
+func WithAPIKey(APIKey string) Option {
+	return func(s *Service) {
+		s.APIKey = APIKey
+	}
+}
+
+func WithConfigFromEnv() Option {
+	return func(s *Service) {
+		s.APIKey = os.Getenv("WEATHER_API")
+	}
 }
 
 func WithBaseURL(baseURL string) Option {
@@ -120,6 +139,7 @@ func (s *Service) getLocationFromTerminal() string {
 func (s *Service) GetLocation(args []string) string {
 	var location string
 	if len(args) > 0 {
+		// Trailing \n is required for USA locations if only the city and state are specified.
 		location = strings.Join(args, " ") + "\n"
 	} else {
 		location = s.getLocationFromTerminal()
