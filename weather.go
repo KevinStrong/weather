@@ -29,6 +29,23 @@ type Service struct {
 	writeOut io.Writer
 }
 
+func Run() {
+	service, err := New(WithConfigFromEnv())
+	if err != nil {
+		fmt.Printf("Please set environment variable WEATHER API key with our open weather api key value")
+		os.Exit(1)
+	}
+	location := service.GetLocation(os.Args[1:])
+	currentWeather, err := service.GetWeather(location)
+
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Current weather in %v is %v\n", location, currentWeather)
+}
+
 func (s *Service) GetWeather(location string) (CurrentWeather, error) {
 	targetURL := s.MakeURL(location)
 
